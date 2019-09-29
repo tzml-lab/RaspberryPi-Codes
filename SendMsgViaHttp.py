@@ -2,9 +2,12 @@ import requests
 import serial
 import os, sys
 import time
-ser = serial.Serial('/dev/ttyACM2',9600, timeout = 5)
+ser = serial.Serial('/dev/ttyACM0',9600, timeout = 10)
 ser.flush()
-
+token = ""
+with open("./recvToken/token", "r") as f:
+    token=f.readline()
+count = 0
 while True:
 
     try:
@@ -42,8 +45,11 @@ while True:
     sec = time.localtime(time.time()).tm_sec
     ard = {"time":"{}:{}:{}".format(hour, min, sec),"height":0,"temp":sensorVal[1],"humidity":sensorVal[2],"soil_humidity":sensorVal[3],"light":sensorVal[4]}
     try:
-        requests.post("https://jasmine.tzml-lab.tw/getInfo/a/", data = ard)
+        if count == 10:
+            requests.post("https://kaibao.tzml-lab.tw/rspcontroller/sensorData?token="+token, data = ard)
+            count = 0
     except:
         continue
-    
+    count = count+1
     print(ard)
+    #time.sleep(10)
